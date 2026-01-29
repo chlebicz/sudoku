@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<AnchorPane stylesheets="@light-theme.css" fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.komponentowe.view.BoardViewController">
+    <children>
+        <HBox alignment="CENTER_LEFT" fillHeight="false" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <GridPane fx:id="boardGrid" gridLinesVisible="true" prefHeight="350.0" prefWidth="350.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="11.11" />
+                    </columnConstraints>
+
+                    <rowConstraints>
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                        <RowConstraints percentHeight="11.11" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                </GridPane>
+                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="timerLabel" text="00:00" style="-fx-font-size: 18px; -fx-font-weight: bold;">
+                            <VBox.margin>
+                                <Insets bottom="10.0" />
+                            </VBox.margin>
+                        </Label>
+
+                        <Button mnemonicParsing="false" text="%readFromFile" onMouseClicked="#handleReadFromFileClicked" />
+                        <Button mnemonicParsing="false" text="%saveToFile" onMouseClicked="#handleWriteToFile" />
+
+                        <Region prefHeight="20.0" />
+
+                        <Button fx:id="resetButton" mnemonicParsing="false" text="Reset" onAction="#handleReset" styleClass="reset-button"/>
+                    </children>
+                </VBox>
+            </children>
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+            <padding>
+                <Insets left="20.0" />
+            </padding>
+        </HBox>
+
+        <Button fx:id="darkModeButton"
+                mnemonicParsing="false"
+                onAction="#toggleDarkMode"
+                AnchorPane.rightAnchor="20.0"
+                AnchorPane.topAnchor="20.0">
+            <graphic>
+                <SVGPath content="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.446z" scaleX="0.8" scaleY="0.8"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Toggle Dark Mode"/>
+            </tooltip>
+        </Button>
+    </children>
+</AnchorPane>
