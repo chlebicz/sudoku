@@ -20,6 +20,16 @@ A simple yet robust desktop Sudoku application developed as a project for a Comp
 *   **Checkstyle**: For ensuring code quality and adherence to strict coding standards.
 *   **SLF4J + Logback**: For configurable logging across application layers.
 
+## Database Integration & ACID compliance
+
+*   **ACID Rules:** The database operations strictly follow ACID rules to guarantee stability.
+    * **Atomicity:** The `JdbcSudokuBoardDao` begins a database transaction explicitly (`connection.setAutoCommit(false)`), allowing operations (like inserting the board and 81 separate fields) to succeed entirely or fail entirely (via `connection.rollback()`).
+    * **Consistency:** Constraints and foreign keys check bounds (e.g. `index BETWEEN 0 AND 80`), protecting database states from becoming corrupt.
+    * **Isolation:** The connections use `TRANSACTION_SERIALIZABLE` isolation level. This strict level ensures absolute synchronization with optimistic locking handling concurrency safely without conflicts.
+    * **Durability:** PostgreSQL handles saving executed commits directly onto persistent docker volumes.
+*   **Object-Relational Mapping (ORM) & Inheritance:** The object model of Java classes is mapped cleanly onto tables. We map properties of our `SudokuBoard` into rows in the `boards` and `board_fields` tables. Additionally, we use an implicit mapping of object structure by not strictly inheriting database schemas. Java abstract structures like `SudokuFieldContainer` (for Rows, Columns, Boxes) are constructed logically using offsets in RAM instead of complicating SQL hierarchies with `Table-Per-Class` approaches. This decision greatly speeds up performance while adhering to clean SOLID architecture.
+*   **Optimistic Locking:** We introduced a specific `version` column inside our board tables. Updates check for modifications using this field. Concurrent overwrites thus throw an application level exception immediately instead of silently destroying user data.
+
 ## Architecture & Design Patterns
 
 This project utilizes a **Maven Multi-Module** structure to enforce a strict separation of concerns, ensuring loose coupling between the user interface and business logic.

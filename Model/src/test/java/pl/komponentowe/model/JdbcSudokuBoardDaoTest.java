@@ -62,10 +62,11 @@ public class JdbcSudokuBoardDaoTest {
         dao.write("SudokuBoard2", testBoard);
 
         SudokuBoard testBoard2 = new SudokuBoard(new BacktrackingSudokuSolver());
-        assertThrows(
-            DaoException.class,
-            () -> dao.write("SudokuBoard2", testBoard2)
-        );
+        // Writing to the same board name updates it now (optimistic lock incremented)
+        dao.write("SudokuBoard2", testBoard2);
+
+        SudokuBoard fetchedBoard = dao.read("SudokuBoard2");
+        assert(testBoard2.equals(fetchedBoard));
     }
 
     @Test

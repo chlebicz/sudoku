@@ -1,24 +1,48 @@
 package pl.komponentowe.model;
 
+import pl.komponentowe.model.exceptions.DaoException;
+import pl.komponentowe.model.exceptions.UnknownSudokuException;
+
 /**
- * Repository for storing and retrieving a Sudoku board instance.
+ * Repository for storing and retrieving a Sudoku board instance using Dao.
  */
-public class SudokuBoardRepository {
-    private SudokuBoard board;
+public class SudokuBoardRepository implements Repository<SudokuBoard> {
+    private final Dao<SudokuBoard> dao;
 
     /**
      * Constructor.
-     * @param board The Sudoku board to be stored
+     * @param dao The DAO adapter used for persistence
      */
-    public SudokuBoardRepository(SudokuBoard board) {
-        this.board = board;
+    public SudokuBoardRepository(Dao<SudokuBoard> dao) {
+        this.dao = dao;
+    }
+
+    @Override
+    public SudokuBoard create(SudokuBoard board) {
+        throw new UnsupportedOperationException("create is not supported without name, use dao.write");
     }
 
     /**
-     * Creates a copy of the stored Sudoku board.
-     * @return A clone of the stored SudokuBoard
+     * Saves the board under the specified name.
+     * @param name The name of the board
+     * @param board The board to save
      */
-    SudokuBoard createInstanceOfSudokuBoard() {
-        return board.clone();
+    public void save(String name, SudokuBoard board) {
+        dao.write(name, board);
+    }
+
+    @Override
+    public SudokuBoard read(String id) {
+        return dao.read(id);
+    }
+
+    @Override
+    public SudokuBoard update(SudokuBoard board) {
+        throw new UnsupportedOperationException("update is not supported directly, use save with name");
+    }
+
+    @Override
+    public void delete(String id) {
+        throw new UnsupportedOperationException("delete is not supported by Dao currently");
     }
 }

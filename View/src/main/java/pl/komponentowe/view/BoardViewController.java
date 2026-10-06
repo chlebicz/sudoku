@@ -147,15 +147,17 @@ public class BoardViewController {
 
         result.ifPresent(fileName -> {
             try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getDao()) {
-                board = dao.read(fileName);
+                SudokuBoardRepository repository = new SudokuBoardRepository(dao);
+                board = repository.read(fileName);
             } catch (Exception e) {
                 logger.error("Error occurred when trying to read Sudoku board");
                 logger.error(e.getMessage());
             }
 
             try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getDao()) {
+                SudokuBoardRepository repository = new SudokuBoardRepository(dao);
                 String nameOfFile = fileName + "_clean";
-                cleanBoard = dao.read(nameOfFile);
+                cleanBoard = repository.read(nameOfFile);
             } catch (NonexistentFileException e) {
                 // case when we load board name_clean, then name_clean_clean does not exist
                 cleanBoard = board.clone();
@@ -187,7 +189,8 @@ public class BoardViewController {
             }
 
             try (Dao<SudokuBoard> decoratedDao = SudokuBoardDaoFactory.getCleanSavingDao(cleanBoard)) {
-                decoratedDao.write(fileName, board);
+                SudokuBoardRepository repository = new SudokuBoardRepository(decoratedDao);
+                repository.save(fileName, board);
             } catch (DaoIoException e) {
                 logger.error(e.getLocalizedMessage());
             } catch (Exception e) {

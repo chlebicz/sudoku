@@ -79,7 +79,8 @@ public class DatabaseInit {
                 id SERIAL PRIMARY KEY,
                 board_name VARCHAR(100) NOT NULL UNIQUE,
                 clean_id INTEGER REFERENCES boards(id) ON DELETE SET NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                version INTEGER DEFAULT 0
             );
         """;
 

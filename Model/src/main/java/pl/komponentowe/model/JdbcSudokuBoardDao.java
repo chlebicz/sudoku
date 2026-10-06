@@ -75,41 +75,78 @@ public class JdbcSudokuBoardDao implements Dao<SudokuBoard> {
 
     @Override
     public void write(String name, SudokuBoard board) {
-        String boardInsertSql = "INSERT INTO boards (board_name) VALUES (?)";
+        String checkExistingSql = "SELECT id, version FROM boards WHERE board_name = ?";
+        String updateBoardSql = "UPDATE boards SET version = version + 1 WHERE id = ? AND version = ?";
+        String updateFieldsSql = "UPDATE board_fields SET value = ? WHERE board_id = ? AND index = ?";
+        String boardInsertSql = "INSERT INTO boards (board_name, version) VALUES (?, 0)";
         String fieldsInsertSql = "INSERT INTO board_fields (board_id, index, value) VALUES (?, ?, ?)";
 
         try {
-            // Transaction start
+            // Transaction start and Isolation level
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             connection.setAutoCommit(false);
 
-            int boardId = 0;
-            try (PreparedStatement boardStatement = connection.prepareStatement(
-                boardInsertSql, Statement.RETURN_GENERATED_KEYS
-            )) {
-                boardStatement.setString(1, name);
-                boardStatement.executeUpdate();
+            int boardId = -1;
+            int currentVersion = -1;
 
-                try (ResultSet rs = boardStatement.getGeneratedKeys()) {
+            try (PreparedStatement checkStatement = connection.prepareStatement(checkExistingSql)) {
+                checkStatement.setString(1, name);
+                try (ResultSet rs = checkStatement.executeQuery()) {
                     if (rs.next()) {
-                        boardId = rs.getInt(1);
-                    } else {
-                        throw new DaoException("unknownDbError");
+                        boardId = rs.getInt("id");
+                        currentVersion = rs.getInt("version");
                     }
                 }
             }
 
-            try (PreparedStatement fieldsStatement = connection.prepareStatement(fieldsInsertSql)) {
-                fieldsStatement.setInt(1, boardId);
+            if (boardId != -1) {
+                // UPDATE EXISTING WITH OPTIMISTIC LOCKING
+                try (PreparedStatement updateBoardStatement = connection.prepareStatement(updateBoardSql)) {
+                    updateBoardStatement.setInt(1, boardId);
+                    updateBoardStatement.setInt(2, currentVersion);
+                    int updatedRows = updateBoardStatement.executeUpdate();
 
-                for (int index = 0; index < 81; ++index) {
-                    fieldsStatement.setInt(2, index);
-                    int value = board.get(index);
-                    fieldsStatement.setInt(3, value);
-
-                    fieldsStatement.addBatch();
+                    if (updatedRows == 0) {
+                        throw new DaoException("optimisticLockException");
+                    }
                 }
 
-                fieldsStatement.executeBatch();
+                try (PreparedStatement updateFieldsStatement = connection.prepareStatement(updateFieldsSql)) {
+                    for (int index = 0; index < 81; ++index) {
+                        updateFieldsStatement.setInt(1, board.get(index));
+                        updateFieldsStatement.setInt(2, boardId);
+                        updateFieldsStatement.setInt(3, index);
+                        updateFieldsStatement.addBatch();
+                    }
+                    updateFieldsStatement.executeBatch();
+                }
+            } else {
+                // INSERT NEW
+                try (PreparedStatement boardStatement = connection.prepareStatement(
+                    boardInsertSql, Statement.RETURN_GENERATED_KEYS
+                )) {
+                    boardStatement.setString(1, name);
+                    boardStatement.executeUpdate();
+
+                    try (ResultSet rs = boardStatement.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            boardId = rs.getInt(1);
+                        } else {
+                            throw new DaoException("unknownDbError");
+                        }
+                    }
+                }
+
+                try (PreparedStatement fieldsStatement = connection.prepareStatement(fieldsInsertSql)) {
+                    fieldsStatement.setInt(1, boardId);
+
+                    for (int index = 0; index < 81; ++index) {
+                        fieldsStatement.setInt(2, index);
+                        fieldsStatement.setInt(3, board.get(index));
+                        fieldsStatement.addBatch();
+                    }
+                    fieldsStatement.executeBatch();
+                }
             }
 
             connection.commit();
